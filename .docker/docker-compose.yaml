@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+
+  mysql:
+    container_name: blog.mysql
+    image: mysql:8.0
+    env_file: ../.env
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DEFAULT_AUTHENTICATION_PLUGIN=caching_sha2_password
+    command: --init-file /data/application/init.sql
+    ports:
+      - "3666:3306"
+    volumes:
+      - blogs-mysql:/var/lib/mysql
+      - ./init.sql:/data/application/init.sql
+    restart: always
+
+  app:
+    container_name: blog.app
+    env_file:
+      - ../.env
+    build:
+      context: ../
+      dockerfile: .docker/Dockerfile
+    environment:
+      - NODE_OPTIONS=--max_old_space_size=8192
+    ports:
+      - "3000:3000"
+    restart: always
+
+volumes:
+  blogs-mysql:
+    driver: local
